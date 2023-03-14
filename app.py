@@ -26,8 +26,9 @@ bot = AsyncTeleBot(config['API_TOKEN'])
 @bot.message_handler(commands=['start', 'help'])
 async def send_auth(message):
     await bot.reply_to(message, '''
-        不保存任何信息，但需要绑定Memos Open API用于推送。
-        实现了文字、单张图文和多张图文的功能，日志功能有时间再说了。
+        不保存任何信息，但需要绑定Memos Open API用于推送。\n
+        实现了文字、单张图文和多张图文的功能，日志功能有时间再说了。\n
+        简单使用方法：https://blog.529213.xyz/article/memos-bot
         ''')
 
 
