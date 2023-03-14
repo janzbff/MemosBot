@@ -8,11 +8,8 @@ from urllib.parse import urlparse
 from aiohttp.formdata import FormData
 from aiohttp import ClientResponse, ClientTimeout
 from aiohttp_retry import RetryClient, ClientSession
+# from loguru import logger
 
-#
-# open_api_url = 'https://memo.senlief.xyz/api/memo?openId=120f19aa-c297-4058-88c4-571435bb316a'
-# domain = f'{urlparse(open_api_url).scheme}://{urlparse(open_api_url).netloc}'
-# open_id = f'{urlparse(open_api_url).query}'
 
 class Request:
     def __init__(self, *args, **kwargs):
@@ -41,32 +38,32 @@ def request(method, url, params=None, headers=None, data=None, json=None):
                        timeout=ClientTimeout(total=1000))
 
 
+def parse_text(text: str):
+    text_list = text.split(' ')
+    tags = []
+    res_ids = []
+    visibility = "PRIVATE"
+    word_list = []
+    for t in text_list:
+        if t == '#PUBLIC':
+            visibility = "PUBLIC"
+        elif t.startswith('#'):
+            tags.append(t.strip('#'))
+            word_list.append(t)
+        elif t.startswith('[') and t.endswith(']'):
+            res_ids = [int(x) for x in list(eval(t))]
+        else:
+            word_list.append(t)
+    texts = ' '.join(word_list)
+    return texts, tags, visibility, res_ids
+
+
 class Memo:
     def __init__(self, token):
         api = urlparse(token)
         self.netloc = api.netloc
         self.open_api = api.query
         self.scheme = api.scheme
-
-    def parse_text(self, text: str):
-        text_list = text.split(' ')
-        tags = []
-        res_ids = []
-        visibility = "PRIVATE"
-        word_list = []
-        for t in text_list:
-            if t == '#public':
-                visibility = "PUBLIC"
-            elif t.startswith('#'):
-                tags.append(t.strip('#'))
-                word_list.append(t)
-            elif t.startswith('[') and t.endswith(']'):
-                res_ids = [int(x) for x in list(eval(t))]
-            else:
-                word_list.append(t)
-        texts = ' '.join(word_list)
-        return texts, tags, visibility, res_ids
-
 
     async def send_memo(self, text=None, visibility="PRIVATE", res_id_list=None):
         if res_id_list is None:
@@ -82,6 +79,36 @@ class Memo:
             assert resp.status == 200
             resp_data = await resp.json()
             return  resp_data['data']['id']
+
+    async def archive_memo(self, memo_id):
+        data = {'id': int(memo_id), 'rowStatus': 'ARCHIVED'}
+        path = f'api/memo/{memo_id}'
+        url = f'{self.scheme}://{self.netloc}/{path}?{self.open_api}'
+        async with request("PATCH", url, json=data) as resp:
+            assert resp.status == 200
+            return
+
+    async def update_memo(self, memo_id, text=None, visibility="PRIVATE", res_id_list=None):
+        """
+        目前只支持更新文字的memo，不支持更新资源
+        :param memo_id:
+        :param text:
+        :param visibility:
+        :param res_id_list:
+        :return:
+        """
+        data = {
+                    "id": memo_id,
+                    "content": text,
+                    "visibility": visibility,
+                    "resourceIdList": res_id_list
+                }
+        path = f'api/memo/{memo_id}'
+        url = f'{self.scheme}://{self.netloc}/{path}?{self.open_api}'
+        async with request("PATCH", url, json=data) as resp:
+            assert resp.status == 200
+            return
+
 
 
 class Resource:
@@ -113,15 +140,15 @@ class Tag:
         path = 'api/tag'
         url = f'{self.scheme}://{self.netloc}/{path}?{self.open_api}'
         data = {'name': name}
-        async with request("POST", url, data=data) as resp:
+        async with request("POST", url, json=data) as resp:
             assert resp.status == 200
 
 
 if __name__ == '__main__':
-    text = '#memos #public 测试文字解析 [1,2,3]'
-    memo = Memo('http://localhost:3001/api/memo?openId=00118412EFA02227B49BD145D6F75940')
-    t, tags, v, res = memo.parse_text(text)
-    print(t,tags,v,res)
+    memos = '#memos #public 测试文字解析 [1,2,3]'
+    memo = Tag('http://localhost:3001/api/memo?openId=00118412EFA02227B49BD145D6F75940')
+    asyncio.run(memo.create_tag('测试1'))
+    # print(t,tags,v,res)
 
 
 
