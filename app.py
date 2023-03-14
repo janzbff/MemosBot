@@ -85,6 +85,7 @@ async def send_memo_by_words(message):
                     memo_id = await memo.send_memo(text=text, visibility=visibility, res_id_list=res_ids)
                     memo_url = f'{domain}{memo_id}'
                     f[str(message.message_id)] = str(memo_id)
+                    logger.debug(f'\nMemo为: {text}\n Tags为: {tags}\n 公开：{visibility}\n 资源ID：{res_ids}')
                     logger.info(f'{message.chat.id}发送了成功发送了1条Memos, MemoID为{memo_id}')
 
                     memo_tag = Tag(url)

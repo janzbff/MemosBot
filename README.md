@@ -1,5 +1,7 @@
 # MemosBot
 利用Telegram Bot作为Memos的前端。
+# Bot
+[MemosBot]https://t.me/memos_self_bot
 
 # 部署
 ## 克隆代码并配置虚拟环境和安装依赖
@@ -42,4 +44,4 @@ $ python3 app.py
 ```
 
 # Bot使用
-[简单使用教程](https://telegra.ph/Memos-Bot%E7%AE%80%E5%8D%95%E4%BD%BF%E7%94%A8%E6%95%99%E7%A8%8B-03-14)
+[简单使用教程](https://blog.529213.xyz/article/memos-bot)
