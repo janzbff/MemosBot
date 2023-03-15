@@ -4,14 +4,10 @@
 [MemosBot](https://t.me/memos_self_bot)
 
 # Docker 部署
-## image构建
-```
-$ cd MemosBot
-$ docker build -t memosbot:v1 .
-```
+
 ## polling模式
 ```
-$ docker run -d -e API_TOKEN=<api_token> -v <db_path>:/MemosBot/db/ --name memosbot janzbff/memosbot:latest   
+$ docker run -d -e API_TOKEN=<api_token> -v <db_path>:/memos/db/ -v <logs_path>:/memos/logs/   --name memosbot janzbff/memosbot:v1  
 ```
 ## webhook模式，需要有ssl证书，或者反代
 ```
@@ -19,14 +15,23 @@ $ docker run -d -e API_TOKEN=<api_token> \
                 -e MODE=webhook \
                 -e WEBHOOK_HOST=<webhook host> \
                 -e WEBHOOK_LISTEN="0.0.0.0" \
-                -p 8443:8443 janzbff/memosbot:latest
+                -v <db_path>:/memos/db/ \
+                -v <logs_path>:/memos/logs/ \
+                -p 8443:8443 janzbff/memosbot:v1
+```
+---
+
+## image构建
+```
+$ cd MemosBot
+$ docker build -t memosbot:v1 .
 ```
 ## docker-compose.yml
 ```
 version: '3'
 services:
   memos:
-    image: janzbff/memosbot:latest
+    image: memosbot:v1
     ports:
       - "8443:8443"
     environment:
