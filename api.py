@@ -39,6 +39,18 @@ def request(method, url, params=None, headers=None, data=None, json=None):
 
 
 def parse_text(text: str):
+    """解析信息
+
+    Args:
+        text (str): 文字信息
+
+    Returns:
+        tuple: 返回一个4元组
+            texts (str): 解析后的信息包含TAG 
+            tags (list): tag列表
+            visibility (str): 是否公开，默认为不公开
+            res_ids (list): 资源列表
+    """
     text_list = text.split(' ')
     tags = []
     res_ids = []
@@ -50,8 +62,13 @@ def parse_text(text: str):
         elif t.startswith('#'):
             tags.append(t.strip('#'))
             word_list.append(t)
-        elif t.startswith('[') and t.endswith(']'):
-            res_ids = [int(x) for x in list(eval(t))]
+        # elif t.startswith('[') and t.endswith(']'):
+        #     res_ids = [int(x) for x in list(eval(t))]
+        elif t.startswith('&'):
+            if t.strip('&').isnumeric():
+                res_ids.append(int(t.strip('&')))
+            else:
+                word_list.append(t)
         else:
             word_list.append(t)
     texts = ' '.join(word_list)

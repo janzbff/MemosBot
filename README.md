@@ -1,7 +1,7 @@
 # MemosBot
 利用Telegram Bot作为Memos的前端。
 # Bot
-[MemosBot]https://t.me/memos_self_bot
+[MemosBot](https://t.me/memos_self_bot)
 
 # 部署
 ## 克隆代码并配置虚拟环境和安装依赖
@@ -20,20 +20,20 @@ $ vim .env
 ### env文件示例
 ```
 #'563623xxxx:AAGg6Fg_sEm1u5sZ1Twg-lhhm2K-xxxxxg'
-API_TOKEN = "" 
+API_TOKEN="" 
 
 # webhook or polling 
 # webhook require ssl
-MODE = "webhook"
+MODE="polling"
 
 #'https://bot.tg.com'
-WEBHOOK_HOST = "https://tgbot.xxx.com"
+WEBHOOK_HOST="https://tgbot.xxx.com"
 
 #8443  # 443, 80, 88 or 8443 (port need to be 'open')
-WEBHOOK_PORT = "8443"
+WEBHOOK_PORT="8443"
 
 #'127.0.0.1'  # In some VPS you may need to put here the IP addr
-WEBHOOK_LISTEN = "127.0.0.1"    
+WEBHOOK_LISTEN="127.0.0.1"    
 ```
 
 ## 后台运行

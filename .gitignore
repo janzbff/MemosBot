@@ -4,3 +4,4 @@ _*
 .idea
 logs/
 db/
+.venv/

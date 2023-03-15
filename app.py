@@ -3,23 +3,31 @@
 
 import shelve
 import asyncio
+import os
 
 from pathlib import Path
 from urllib.parse import urlparse
 from aiohttp import web
 from telebot.async_telebot import AsyncTeleBot, types
 from telebot.asyncio_filters import IsReplyFilter, TextStartsFilter
-from dotenv import dotenv_values
+from dotenv import load_dotenv
 from loguru import logger
 from api import Memo, Resource, Tag, parse_text
 # import logging
 # import telebot
 
 
-config = dotenv_values(".env")
+load_dotenv(verbose=True)
 logger.add('logs/memos-info-{time}.log', format="{time} {level} {message}", filter=lambda record: 'INFO' in record['level'].name, enqueue=True, rotation='00:00', retention='15 days')
 logger.add('logs/memos-debug-{time}.log', format="{time} {level} {message}", filter=lambda record: 'DEBUG' or 'ERROR' in record['level'].name, enqueue=True, rotation='00:00', retention='15 days')
-bot = AsyncTeleBot(config['API_TOKEN'])
+
+
+MODE = os.getenv('MODE', default='polling')
+WEBHOOK_LISTEN = os.getenv('WEBHOOK_LISTEN', default='127.0.0.1')
+WEBHOOK_PORT = os.getenv('WEBHOOK_PORT', default='8443')
+WEBHOOK_HOST = os.getenv('WEBHOOK_HOST')
+TOKEN = os.getenv('API_TOKEN')
+bot = AsyncTeleBot(TOKEN)
 # logger = telebot.logger
 # telebot.logger.setLevel(logging.DEBUG)
 
@@ -62,9 +70,9 @@ async def save_info(message):
             f['token'] = message.text
         await bot.reply_to(message, f'{message.chat.id}绑定{message.text}成功！')
         logger.info(f'{message.chat.id}已经注册')
-    # if config['ADMIN_ID'] != '':
+    # if os.getenv['ADMIN_ID'] != '':
     #     try:
-    #         await bot.send_message(config['ADMIN_ID'], f'{message.chat.id}注册')
+    #         await bot.send_message(os.getenv['ADMIN_ID'], f'{message.chat.id}注册')
     #     except ValueError as e:
     #         print(e)
     # else:
@@ -83,10 +91,10 @@ async def send_memo_by_words(message):
                 try:
                     memo = Memo(url)
                     text, tags, visibility, res_ids = parse_text(message.text)
+                    logger.debug(f'\nMemo为: {text}\n Tags为: {tags}\n 公开：{visibility}\n 资源ID：{res_ids}')
                     memo_id = await memo.send_memo(text=text, visibility=visibility, res_id_list=res_ids)
                     memo_url = f'{domain}{memo_id}'
                     f[str(message.message_id)] = str(memo_id)
-                    logger.debug(f'\nMemo为: {text}\n Tags为: {tags}\n 公开：{visibility}\n 资源ID：{res_ids}')
                     logger.info(f'{message.chat.id}发送了成功发送了1条Memos, MemoID为{memo_id}')
 
                     memo_tag = Tag(url)
@@ -253,9 +261,9 @@ async def setup():
     await bot.remove_webhook()
     # Set webhook
 
-    # await bot.set_webhook(url=config['WEBHOOK_URL_BASE'] + config['WEBHOOK_URL_PATH'])
-    host = config['WEBHOOK_HOST']
-    token = config['API_TOKEN']
+    # await bot.set_webhook(url=os.getenv['WEBHOOK_URL_BASE'] + os.getenv['WEBHOOK_URL_PATH'])
+    host = WEBHOOK_HOST
+    token = TOKEN
     url = f'{host}/{token}/'
     await bot.set_webhook(url=url)
 
@@ -266,16 +274,17 @@ async def setup():
 
 
 if __name__ == '__main__':
-    if config['MODE'] == 'webhook':
+    if MODE == 'webhook':
+        logger.debug('以WEBHOOK模式启动')
         # Start aiohttp server
         web.run_app(
             setup(),
-            host=config['WEBHOOK_LISTEN'],
-            port=config['WEBHOOK_PORT']
+            host=WEBHOOK_LISTEN,
+            port=WEBHOOK_PORT
         )
-    elif config['MODE'] == 'polling':
+    elif MODE == 'polling':
         asyncio.run(bot.remove_webhook())
-        print('polling')
+        logger.debug('以POLLING模式启动')
         asyncio.run(bot.polling())
     else:
         pass
