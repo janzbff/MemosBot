@@ -23,7 +23,7 @@ logger.add('logs/memos-debug-{time}.log', format="{time} {level} {message}", fil
 
 
 MODE = os.getenv('MODE', default='polling')
-WEBHOOK_LISTEN = os.getenv('WEBHOOK_LISTEN', default='127.0.0.1')
+WEBHOOK_LISTEN = os.getenv('WEBHOOK_LISTEN', default='0.0.0.0')
 WEBHOOK_PORT = os.getenv('WEBHOOK_PORT', default='8443')
 WEBHOOK_HOST = os.getenv('WEBHOOK_HOST')
 TOKEN = os.getenv('API_TOKEN')

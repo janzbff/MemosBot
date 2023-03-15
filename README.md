@@ -3,7 +3,43 @@
 # Bot
 [MemosBot](https://t.me/memos_self_bot)
 
-# 部署
+# Docker 部署
+## image构建
+```
+$ cd MemosBot
+$ docker build -t memosbot:v1 .
+```
+## polling模式
+```
+$ docker run -d -e API_TOKEN=<api_token> -v <db_path>:/MemosBot/db/ --name memosbot janzbff/memosbot:latest   
+```
+## webhook模式，需要有ssl证书，或者反代
+```
+$ docker run -d -e API_TOKEN=<api_token> \
+                -e MODE=webhook \
+                -e WEBHOOK_HOST=<webhook host> \
+                -e WEBHOOK_LISTEN="0.0.0.0" \
+                -p 8443:8443 janzbff/memosbot:latest
+```
+## docker-compose.yml
+```
+version: '3'
+services:
+  memos:
+    image: janzbff/memosbot:latest
+    ports:
+      - "8443:8443"
+    environment:
+      - API_TOKEN=<token>
+      # - MODE=webhook
+      # - WEBHOOK_HOST=<webhook_host>
+      # - WEBHOOK_LISTEN=0.0.0.0
+    restart: always
+    volumes:
+      - <db_path>:/memos/db/
+      - <logs_path>:/memos/logs/
+```
+# 本机部署
 ## 克隆代码并配置虚拟环境和安装依赖
 ```bash
 $ git clone https://github.com/janzbff/MemosBot.git
